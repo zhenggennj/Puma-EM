@@ -1,6 +1,6 @@
-from scipy import zeros, array, sqrt, dot
+from numpy import zeros, array, sqrt, dot
 try:
-    from scipy import weave
+    from numpy import weave
     from scipy.weave import converters
 except ImportError:
     pass

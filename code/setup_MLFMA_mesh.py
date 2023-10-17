@@ -4,7 +4,7 @@ try:
 except ImportError:
     import pickle as cPickle
 from mpi4py import MPI
-from scipy import array, sqrt, pi
+from numpy import array, sqrt, pi
 from ReadWriteBlitzArray import readIntFromDisk, writeScalarToDisk, writeASCIIBlitzArrayToDisk, read1DBlitzArrayFromDisk
 
 def setup_mesh(params_simu, simuDirName):

@@ -4,7 +4,7 @@ try:
     import cPickle
 except ImportError:
     import pickle as cPickle
-from scipy import arccos, log, log10, ceil, floor, where, real, sqrt
+from numpy import arccos, log, log10, ceil, floor, where, real, sqrt
 from integration import *
 from EM_constants import *
 from ReadWriteBlitzArray import writeScalarToDisk, writeASCIIBlitzArrayToDisk

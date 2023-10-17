@@ -1,5 +1,5 @@
 import os, sys
-from scipy import array
+from numpy import array
 from Z_MoM import Z_MoM_triangles_arraysFromCube
 from ReadWriteBlitzArray import writeBlitzArrayToDisk
 from meshClass import CubeClass

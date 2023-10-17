@@ -1,6 +1,6 @@
-from scipy import *
+from numpy import *
 try:
-    from scipy import weave
+    from numpy import weave
     from scipy.weave import converters
 except ImportError:
     pass

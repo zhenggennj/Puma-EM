@@ -7,7 +7,7 @@ from mpi4py import MPI
 from FMM_precond import Mg_CSR
 from assemble_Z_near import Z_nearCRS_Assembling
 from ReadWriteBlitzArray import writeASCIIBlitzArrayToDisk
-from scipy import array
+from numpy import array
 
 def compute_SAIpreconditioner(tmpDirName, C, chunkNumber_to_cubesNumbers, cubeNumber_to_chunkNumber, chunkNumber_to_processNumber, processNumber_to_ChunksNumbers, MAX_BLOCK_SIZE):
     my_id = MPI.COMM_WORLD.Get_rank()
@@ -16,7 +16,7 @@ def compute_SAIpreconditioner(tmpDirName, C, chunkNumber_to_cubesNumbers, cubeNu
     Z_TMP_ELEM_TYPE = 'F'
     # computation of the Frobenius preconditioner
     Wall_t0 = time.time()
-    CPU_t0 = time.clock()
+    CPU_t0 = time.process_time()
     pathToReadFrom = os.path.join(tmpDirName, 'Z_tmp')
     pathToSaveTo = os.path.join(tmpDirName, 'Mg_LeftFrob')
     # we look for the LIB_G2C type
@@ -31,7 +31,7 @@ def compute_SAIpreconditioner(tmpDirName, C, chunkNumber_to_cubesNumbers, cubeNu
     MPI.COMM_WORLD.Barrier()
     Mg_CSR(my_id, processNumber_to_ChunksNumbers, chunkNumber_to_cubesNumbers, cubeNumber_to_chunkNumber, ELEM_TYPE, Z_TMP_ELEM_TYPE, LIB_G2C, pathToReadFrom, pathToSaveTo)
     MPI.COMM_WORLD.Barrier()
-    CPU_time_Mg_computation = time.clock() - CPU_t0
+    CPU_time_Mg_computation = time.process_time() - CPU_t0
     Wall_time_Mg_computation = time.time() - Wall_t0
     # assembling of near interactions matrix
     pathToReadFrom = os.path.join(tmpDirName, 'Z_tmp')

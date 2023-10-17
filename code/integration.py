@@ -1,5 +1,5 @@
 from math import pi
-from scipy import zeros, sqrt, sort, real, sum, cos
+from numpy import zeros, sqrt, sort, real, sum, cos
 
 
 def integr_1D_X_W(a, b, N_points, METHOD, INCLUDE_BOUDARIES):

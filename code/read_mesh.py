@@ -1,7 +1,7 @@
 import os, sys, time
-from scipy import zeros, compress, take, put
+from numpy import zeros, compress, take, put
 from PyGmsh import executeGmsh, write_geo
-#from scipy import weave
+#from numpy import weave
 #from scipy.weave import converters
 
 
@@ -167,11 +167,13 @@ def preRead_mesh_GMSH_2(meshFile_name):
             if (len(content[newField])==0) and (newField in specialFields):
                 content[newField] = [0]
                 pass
-            elif (newField in ['Elements', 'ELM']):
-                elementTmp2 = line.split()
-                if elementTmp2[1]=='2': # type 'planar triangle' has number 2
-                  fileForField.write(line)
-                  numberOfLines += 1
+                '''
+                elif (newField in ['Elements', 'ELM']):
+                    elementTmp2 = line.split()
+                    if elementTmp2[1]=='2': # type 'planar triangle' has number 2
+                      fileForField.write(line)
+                      numberOfLines += 1
+                '''
             else:
                 fileForField.write(line)
                 numberOfLines += 1
@@ -194,12 +196,67 @@ def read_mesh_GMSH_2(name, targetDimensions_scaling_factor, z_offset):
     vertexes_coord = zeros( (V, 3), 'd' )
 
     index = 0
+    numindex = 0
+    cooindex = 0
     file = open(name + '.' + vertexes_key, 'r')
+    '''
     for line in file:
         tmp = line.split()
         vertexes_numbers[index] = int(tmp[0])
         vertexes_coord[index, :] = list(map(float, tmp[1:]))
+
         index += 1
+    '''
+    ''' # V4.1
+        # headline def: D # 0 M       D:(0)POINT,(1)curve,(2)FACE;  #: element tag; M:points
+        
+        # Points:
+        #headline:   0 1 0 1           //first "1": element tag    
+        #1stline:   1                 //   point tag
+        #2ndline:   1.0 2.0  3.0      //x,y,z
+
+        # curves:
+        #headline:   1 7 0 6           //7: element tag
+        #   1        21               //21: point tag
+        #   2...5    ...
+        #   6        26               //6line
+        #   1       0  -0.1  -0.08
+        #   2...5   ...
+        #   6       0  -0.1  -0.057
+
+        # faces(triangles):
+        #headline:   2 12 0 49           //12: element tag
+        #   1        225               //225: point tag
+        #   2...48    ...
+        #   49       273               //total 49 lines
+        #   1       0  -0.1  -0.08
+        #   2...48   ...
+        #   49      0  -0.1  -0.057
+     '''
+    line=file.readline()
+    while not line=='' :
+        item=line.split()
+        D=item[0]
+        M=int(item[3])
+      
+        for i in range(M):
+            line=file.readline()   
+            tmp = line.split()     
+            assert(len(tmp)==1)    
+            vertexes_numbers[numindex] = int(tmp[0])
+            numindex += 1
+        for i in range(M):
+            line=file.readline()
+            tmp= line.split()
+            assert(len(tmp)==3)
+            vertexes_coord[cooindex, :] = list(map(float, tmp[:]))
+            cooindex += 1
+
+        line = file.readline()
+
+        
+    #print(vertexes_coord)
+    #print(vertexes_numbers)
     if not (targetDimensions_scaling_factor==1.0):
         vertexes_coord *= targetDimensions_scaling_factor
     vertexes_coord[:, -1] += z_offset
@@ -235,20 +292,77 @@ def read_mesh_GMSH_2(name, targetDimensions_scaling_factor, z_offset):
     triangles_nodes = zeros( (T, 3), 'i')
     triangles_physicalSurface = zeros(T, 'i')
     index = 0
+    ''' original
     for line in g:
         tmp = list(map(int, line.split()))
         triangles_nodes[index, :] = tmp[-3:]
         triangles_physicalSurface[index] = tmp[3]
         index += 1
     g.close()
+    '''
+    # zheng  calculating the total vertexis of all triangle faces
+    line=g.readline()
+    while not line=='' :
+        item=line.split()
+        D=int(item[0])
+        M=int(item[3])
+        for i in range(M):
+            line=g.readline()
+            if D==2 :
+                index += 1
+        line=g.readline()
+    g.close()
+    T=index
+    #print("in read_mesh.py T=",T)
 
+    # zheng  reading triangle vertexis tag
+    g = open(name + "." + elements_key, 'r')
+    triangles_nodes = zeros( (T, 3), 'i')
+    triangles_physicalSurface = zeros(T, 'i')
+    index = 0
+ 
+    line=g.readline()
+    while not line=='' :
+        item=line.split()
+        D=int(item[0])
+        M=int(item[3])
+        for i in range(M):
+            line=g.readline()
+            if D==2 :
+                tmp = list(map(int, line.split()))
+                triangles_nodes[index, :] = tmp[-3:]
+                triangles_physicalSurface[index] = tmp[0]
+                index += 1
+
+        line=g.readline()
+    g.close()
     # indexes of elements in Python/C++ arrays start at 0.
     # However, triangles_nodes don't necessarily start at 0.
     # So the following 4 lines correct that.
+    # zheng
+    # vertexes_numbers=[1,2,.....,vertex_number_max],continuously numbering
+    # vertexes_coords=[0:[vertex1coords],1:[vertex2coords],...,
+    #                   vertex_number_max-1:[vertexMaxcoords];
     vertex_number_max = max(vertexes_numbers)
     nodes_vertexes = zeros( vertex_number_max + 1, 'i' )
     put(nodes_vertexes, vertexes_numbers, range(V))
+    # equivalent to：
+    # for i in range(V):
+    #    nodes_vertexes[vertexes_numbers[i]]=i
+    # i=0     vertexes_numbers[0]=1,   nodes_vertexes[1]=0
+    # i=1     vertexes_numbers[1]=2,   nodes_vertexes[2]=1
+    # ...
+    # i=max-1  vertexes_numbers[max-1]=max  nodes_vertexes[max]=max-1
+    # vertexes_numbers=[1,2,3,4,5,...,max]
+    #                   | | | | |      |
+    # nodes_vertexes=[0,0,1,2,3,4,...,max-1]
+    
     triangles_vertexes = take(nodes_vertexes, triangles_nodes, axis=0).astype('i')
+    # triangles_nodes=[[100,101,102],...,[v1,v2,v3]]
+    # triangles_vertexes = [[nodes_vertexes[v1],nodes_vertexes[v2],nodes_vertexes[v3],....]
+    #                    = [[99,100,101],...,[v1-1,v2-1,v3-1]]
+    # In this way, all vertexis tags are subtracted by 1.
+
     # we will now eliminate the points that we don't need
 #    del triangles_nodes # gain some memory, we now work only with triangles_vertexes...
 #    max_encountered_vertexes = max(triangles_vertexes.flat)
@@ -277,6 +391,8 @@ def read_mesh_GMSH_2(name, targetDimensions_scaling_factor, z_offset):
 #    triangles_vertexes = take(oldVertex_to_newVertex, triangles_vertexes, axis=0)
 #    vertexes_coord = take(vertexes_coord, encountered_vertexes, axis=0)
     return vertexes_coord.astype('d'), triangles_vertexes.astype('i'), triangles_physicalSurface.astype('i')
+    # vertexes_coord[] contains all vertexis (points, curves and faces)
+    # triangles_vertexes[] only contains vertexes tags from faces(triangles), subtracted by 1 and their coordinates can be read from vertexes_coord[] by their tags
 
 def preRead_mesh_GiD(meshFile_name):
     """

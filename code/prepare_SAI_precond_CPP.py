@@ -5,7 +5,7 @@ except ImportError:
     import pickle as cPickle
 from mpi4py import MPI
 from ReadWriteBlitzArray import writeASCIIBlitzArrayToDisk
-from scipy import array
+from numpy import array
 
 def prepare_SAI(params_simu, simuDirName):
     my_id = MPI.COMM_WORLD.Get_rank()

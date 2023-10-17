@@ -1,12 +1,12 @@
 from mpi4py import MPI
 import sys, os, copy
-from scipy import zeros, array, compress, arange, take
+from numpy import zeros, array, compress, arange, take
 try:
-    from scipy import weave
+    from numpy import weave
     from scipy.weave import converters
 except ImportError:
     pass
-from scipy import eye, put, transpose #, linalg
+from numpy import eye, put, transpose #, linalg
 from myPseudoInv import computeMyPinvCC #, computeMyPinv
 from assemble_Z_near import read_Z_perCube_fromFile, writeToDisk_chunk_of_Z_sparse
 from ReadWriteBlitzArray import writeASCIIBlitzArrayToDisk

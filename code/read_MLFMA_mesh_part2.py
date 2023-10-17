@@ -7,7 +7,7 @@ try:
     import cPickle
 except ImportError:
     import pickle as cPickle
-from scipy import take, sum, mean, zeros
+from numpy import take, sum, mean, zeros
 from ReadWriteBlitzArray import writeScalarToDisk, writeBlitzArrayToDisk, read1DBlitzArrayFromDisk
 from ReadWriteBlitzArray import readIntFromDisk, readFloatFromDisk, readASCIIBlitzIntArray1DFromDisk, readBlitzArrayFromDisk
 

@@ -1,10 +1,10 @@
-from scipy import rand, product
+from numpy import rand, product
 try:
-    from scipy import weave
+    from numpy import weave
     from scipy.weave import converters
 except ImportError:
     pass
-from scipy import zeros, array, arange
+from numpy import zeros, array, arange
 import time
 from mpi4py import MPI
 

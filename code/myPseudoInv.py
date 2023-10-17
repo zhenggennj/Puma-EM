@@ -1,7 +1,7 @@
 import sys, os
-from scipy import conj, array, zeros, rand, eye, dot, floor, transpose, real, imag, triu
+from numpy import conj, array, zeros, rand, eye, dot, floor, transpose, real, imag, triu
 try:
-    from scipy import weave
+    from numpy import weave
     from scipy.weave import converters
 except ImportError:
     pass
@@ -155,7 +155,7 @@ if __name__=="__main__":
     #for j in range(A1.shape[0]):
         #A2[j] = A0[j]
     LIB_G2C = 'g2c' # for gcc >= 4.3.0, LIB_G2C = 'gfortran'
-    from scipy import linalg
+    from numpy import linalg
     X1 = linalg.pinv(A1) # the pseudo inverse
     X2 = computeMyPinvCC(A2, LIB_G2C)
     X3 = computeTriangleUpSolve(A1, LIB_G2C)
