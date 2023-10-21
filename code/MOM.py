@@ -1,7 +1,8 @@
 import os, sys
 from math import pi
 from numpy import zeros, array, arange, dot
-from numpy import sparse, linalg, cos, sin, conj, log10, real, sum, imag
+from numpy import linalg, cos, sin, conj, log10, real, sum, imag
+from scipy import sparse
 from scipy.sparse.linalg import bicgstab, lgmres
 from meshClass import MeshClass
 from PyGmsh import executeGmsh, write_geo
@@ -219,7 +220,7 @@ def itercount(residual):
 
 if __name__=="__main__":
     path = './geo'
-    targetName = 'sphere2'
+    targetName = 'sphere'
     # first resonances for the sphere: f = c * Z/(2*pi*a), where Z is a zero of J Bessel function
     # Z = 4.493409375, 5.763459195, 6.987932, 8.18256145, 9.35581211, 10.5128354
     # respectively for orders 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5
